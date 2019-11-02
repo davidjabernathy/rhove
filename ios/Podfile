@@ -34,20 +34,20 @@ target 'ReactNativeCodeChallenge' do
   pod 'glog', :podspec => '../node_modules/react-native/third-party-podspecs/glog.podspec'
   pod 'Folly', :podspec => '../node_modules/react-native/third-party-podspecs/Folly.podspec'
 
-  target 'ReactNativeCodeChallengeTests' do
-    inherit! :search_paths
-    # Pods for testing
-  end
+  # target 'ReactNativeCodeChallengeTests' do
+  #   inherit! :search_paths
+  #   # Pods for testing
+  # end
 
   use_native_modules!
 end
 
-target 'ReactNativeCodeChallenge-tvOS' do
-  # Pods for ReactNativeCodeChallenge-tvOS
+# target 'ReactNativeCodeChallenge-tvOS' do
+#   # Pods for ReactNativeCodeChallenge-tvOS
 
-  target 'ReactNativeCodeChallenge-tvOSTests' do
-    inherit! :search_paths
-    # Pods for testing
-  end
+#   target 'ReactNativeCodeChallenge-tvOSTests' do
+#     inherit! :search_paths
+#     # Pods for testing
+#   end
 
-end
+# end

@@ -3,20 +3,18 @@
  */
 
 import React from 'react';
-import {SafeAreaView, Image} from 'react-native';
+import { SafeAreaView } from 'react-native';
+
+import Comics from './components/Comics';
 
 class App extends React.Component {
-  render() {
-    return (
-      <SafeAreaView>
-        <Image
-          source={require('./so-it-begins.jpg')}
-          style={{width: '100%'}}
-          resizeMode={'contain'}
-        />
-      </SafeAreaView>
-    );
-  }
+	render() {
+		return (
+			<SafeAreaView>
+				<Comics />
+			</SafeAreaView>
+		);
+	}
 }
 
 export default App;
