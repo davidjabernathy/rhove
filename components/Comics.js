@@ -11,21 +11,24 @@ export default function Comics(props) {
     const [ lastFetchedComicId, setLastFetchedComicId ] = useState(null)
     const [ isDescending, setIsDescending ] = useState(true)
     const [ didMount, setDidMount ] = useState(false)
-     
+    
     useEffect(() => {
         setDidMount(true)
     },[])
 
+    // get the most recent comic
     useEffect(() => {
         getCurrentComic()
     }, [])
 
+    // get new 4 comics after we know the most recent comic id
     useEffect(() => {
         if(mostRecentComicId != null) {
             getPrevFourComics(mostRecentComicId)
         } 
     }, [mostRecentComicId])
 
+    // empty the list when the order is reversed
     useEffect(() => {
         if(didMount) {
             setComicsList([])
@@ -33,8 +36,8 @@ export default function Comics(props) {
 
     }, [isDescending])
 
+    // get the first few comics after the order is reversed
     useEffect(() => {
-        debugger
         if(didMount) {
             if(!isDescending && comicsList.length == 0) {
                 getNextFourComics(0, true)
@@ -61,15 +64,16 @@ export default function Comics(props) {
     }
 
     getComicById = async function(comicNumber) {
-        let url = 'https://any-api.com:8443/http://xkcd.com/' + comicNumber + '/info.0.json'
+        if(comicNumber >= 0 && (mostRecentComicId === null || comicNumber <= mostRecentComicId)) {
+            let url = 'https://any-api.com:8443/http://xkcd.com/' + comicNumber + '/info.0.json'
     
-        try {
-            const response = await fetch(url)
-            debugger
-            const comic = await response.json()
-            return comic
-        } catch(ex) {
-            console.error(ex)
+            try {
+                const response = await fetch(url)
+                const comic = await response.json()
+                return comic
+            } catch(ex) {
+                console.error(ex)
+            }
         }
     }
 
@@ -79,6 +83,8 @@ export default function Comics(props) {
         var second = await getComicById(prevId - 2)
         var third = await getComicById(prevId - 3)
         var fourth = await getComicById(prevId - 4)
+
+        setLastFetchedComicId(prevId - 4)
 
         const prevComics = reset ? [mostRecentComic] : comicsList
         setComicsList(prevComics.concat([first, second, third, fourth]))
@@ -91,6 +97,8 @@ export default function Comics(props) {
         var third = await getComicById(prevId + 3)
         var fourth = await getComicById(prevId + 4)
 
+        setLastFetchedComicId(prevId + 4)
+
         const prevComics = comicsList
         setComicsList(prevComics.concat([first, second, third, fourth]))
     }
@@ -101,7 +109,16 @@ export default function Comics(props) {
     }
 
     reverseOrder = async () => {
-        setIsDescending(!isDescending)  
+        // changing isDecending will trigger an effect
+        setIsDescending(!isDescending)      
+    }
+
+    getMoreComics = async () => {
+        if(isDescending) {
+            await getPrevFourComics(lastFetchedComicId)
+        } else {
+            await getNextFourComics(lastFetchedComicId)
+        }
     }
     
     if(!comicsList || comicsList.length < 2) {
@@ -113,16 +130,27 @@ export default function Comics(props) {
     }
  
     return (
-        <FlatList
-            data={comicsList}
-            renderItem={({ item }) => (
-                <ComicCard comic={item} />
-            )}
-            keyExtractor={(item) => item.key}
-            ListHeaderComponent={() => {
-                return <TouchableOpacity onPress={() => reverseOrder()}><Text>reverse order</Text></TouchableOpacity>
-            }}
-        />
+        <View>
+            <FlatList
+                data={comicsList}
+                renderItem={({ item }) => (
+                    <ComicCard comic={item} />
+                )}
+                keyExtractor={(item) => item.key}
+                ListHeaderComponent={() => {
+                    return (
+                        <View style={{width: '90%', alignItems: 'flex-end'}}>
+                        <TouchableOpacity onPress={() => reverseOrder()}><Text style={{color: 'blue'}}>reverse order</Text></TouchableOpacity>
+                        </View>
+                    )
+                }}
+                onEndReached={() => getMoreComics()}
+                onEndReachedThreshold={0}
+                ListFooterComponent={() =>{
+                    return <ActivityIndicator />
+                }}
+            />
+        </View>
     )
 
 }
