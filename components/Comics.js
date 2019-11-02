@@ -136,7 +136,7 @@ export default function Comics(props) {
                 renderItem={({ item }) => (
                     <ComicCard comic={item} />
                 )}
-                keyExtractor={(item) => item.key}
+                keyExtractor={(item) => item.num.toString()}
                 ListHeaderComponent={() => {
                     return (
                         <View style={{width: '90%', alignItems: 'flex-end'}}>
