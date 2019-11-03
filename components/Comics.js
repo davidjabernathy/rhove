@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, FlatList, ActivityIndicator, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { View, FlatList, ActivityIndicator, TouchableOpacity, Text, StyleSheet, AsyncStorage } from 'react-native';
 
 import ComicCard from './ComicCard';
 
@@ -47,7 +47,7 @@ export default function Comics(props) {
         }
     }, [comicsList])
       
-    getCurrentComic = async function() {   
+    getCurrentComic = async function() {
         let url = 'https://any-api.com:8443/http://xkcd.com/info.0.json'
     
         try {
@@ -65,14 +65,22 @@ export default function Comics(props) {
 
     getComicById = async function(comicNumber) {
         if(comicNumber >= 0 && (mostRecentComicId === null || comicNumber <= mostRecentComicId)) {
-            let url = 'https://any-api.com:8443/http://xkcd.com/' + comicNumber + '/info.0.json'
+            const comicFromStorage = await AsyncStorage.getItem('comic-' + comicNumber)
+            if(comicFromStorage != null) {
+                console.log('comic found in storage')
+                return JSON.parse(comicFromStorage)
+            } else {
+                let url = 'https://any-api.com:8443/http://xkcd.com/' + comicNumber + '/info.0.json'
     
-            try {
-                const response = await fetch(url)
-                const comic = await response.json()
-                return comic
-            } catch(ex) {
-                console.error(ex)
+                try {
+                    console.log('fetching comic')
+                    const response = await fetch(url)
+                    const comic = await response.json()
+                    AsyncStorage.setItem('comic-' + comicNumber, JSON.stringify(comic))
+                    return comic
+                } catch(ex) {
+                    console.error(ex)
+                }               
             }
         }
     }
@@ -140,12 +148,12 @@ export default function Comics(props) {
                 ListHeaderComponent={() => {
                     return (
                         <View style={{width: '90%', alignItems: 'flex-end'}}>
-                        <TouchableOpacity onPress={() => reverseOrder()}><Text style={{color: 'blue'}}>reverse order</Text></TouchableOpacity>
+                        <TouchableOpacity onPress={() => reverseOrder()}><Text style={styles.actionText}>reverse order</Text></TouchableOpacity>
                         </View>
                     )
                 }}
                 onEndReached={() => getMoreComics()}
-                onEndReachedThreshold={0}
+                onEndReachedThreshold={0.01}
                 ListFooterComponent={() =>{
                     return <ActivityIndicator />
                 }}
@@ -161,5 +169,9 @@ styles = StyleSheet.create({
         width: '100%',
         justifyContent: 'center',
         alignItems: 'center'
+    },
+    actionText: {
+        color: 'blue',
+        fontSize: 20
     }
 })
